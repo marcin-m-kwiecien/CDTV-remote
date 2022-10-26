@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">cdtvremote</string>
+    <string name="button_label_up">UP</string>
+    <string name="button_label_down">DOWN</string>
+    <string name="button_label_left">LEFT</string>
+    <string name="button_label_right">RIGHT</string>
+    <string name="button_label_a">A</string>
+    <string name="button_label_b">B</string>
+    <string name="button_label_1">1</string>
+    <string name="button_label_2">2</string>
+    <string name="button_label_3">3</string>
+    <string name="button_label_4">4</string>
+    <string name="button_label_5">5</string>
+    <string name="button_label_6">6</string>
+    <string name="button_label_7">7</string>
+    <string name="button_label_8">8</string>
+    <string name="button_label_9">9</string>
+    <string name="button_label_0">0</string>
+    <string name="button_label_enter">Enter</string>
+    <string name="button_label_escape">Escape</string>
+</resources>
