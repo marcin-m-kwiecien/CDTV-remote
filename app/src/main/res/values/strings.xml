@@ -18,4 +18,5 @@
     <string name="button_label_0">0</string>
     <string name="button_label_enter">Enter</string>
     <string name="button_label_escape">Escape</string>
+    <string name="switch_label_mouse_joystick">Mouse/Joystick</string>
 </resources>

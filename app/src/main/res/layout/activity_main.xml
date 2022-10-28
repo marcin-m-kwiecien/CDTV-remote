@@ -11,11 +11,13 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/label_hello"
-            android:layout_width="wrap_content"
+        <Switch
+            android:id="@+id/switch_mouse_joystick"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Hello World!" />
+            android:text="@string/switch_label_mouse_joystick"
+            android:layout_margin="10dp"
+            tools:ignore="UseSwitchCompatOrMaterialXml" />
 
         <Button
             android:id="@+id/button_mouse_up"

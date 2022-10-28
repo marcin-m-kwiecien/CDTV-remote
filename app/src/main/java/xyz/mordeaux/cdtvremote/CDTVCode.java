@@ -24,7 +24,13 @@ public enum CDTVCode {
     BUTTON_9(0x015),
     BUTTON_0(0x039),
     BUTTON_ESCAPE(0x031),
-    BUTTON_ENTER(0x035);
+    BUTTON_ENTER(0x035),
+    JOYSTICK_A(0x880),
+    JOYSTICK_B(0x840),
+    JOYSTICK_UP(0x820),
+    JOYSTICK_DOWN(0x810),
+    JOYSTICK_LEFT(0x808),
+    JOYSTICK_RIGHT(0x804);
 
     private static final Integer INITIAL_PULSE = 9000;
     private static final Integer INITIAL_PAUSE = 4500;

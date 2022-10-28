@@ -7,6 +7,7 @@ import android.hardware.ConsumerIrManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Switch;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
@@ -22,25 +23,27 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onClick(View v) {
+            Switch mouseJoystick = findViewById(R.id.switch_mouse_joystick);
+            boolean isJoystick = mouseJoystick.isChecked();
             CDTVCode code = null;
             switch (v.getId()) {
                 case R.id.button_mouse_up:
-                    code = CDTVCode.MOUSE_UP;
+                    code = isJoystick ? CDTVCode.JOYSTICK_UP : CDTVCode.MOUSE_UP;
                     break;
                 case R.id.button_mouse_down:
-                    code = CDTVCode.MOUSE_DOWN;
+                    code = isJoystick ? CDTVCode.JOYSTICK_DOWN : CDTVCode.MOUSE_DOWN;
                     break;
                 case R.id.button_mouse_left:
-                    code = CDTVCode.MOUSE_LEFT;
+                    code = isJoystick ? CDTVCode.JOYSTICK_LEFT : CDTVCode.MOUSE_LEFT;
                     break;
                 case R.id.button_mouse_right:
-                    code = CDTVCode.MOUSE_RIGHT;
+                    code = isJoystick ? CDTVCode.JOYSTICK_RIGHT : CDTVCode.MOUSE_RIGHT;
                     break;
                 case R.id.button_mouse_a:
-                    code = CDTVCode.MOUSE_A;
+                    code = isJoystick ? CDTVCode.JOYSTICK_A : CDTVCode.MOUSE_A;
                     break;
                 case R.id.button_mouse_b:
-                    code = CDTVCode.MOUSE_B;
+                    code = isJoystick ? CDTVCode.JOYSTICK_B : CDTVCode.MOUSE_B;
                     break;
                 case R.id.button_key_1:
                     code = CDTVCode.BUTTON_1;
