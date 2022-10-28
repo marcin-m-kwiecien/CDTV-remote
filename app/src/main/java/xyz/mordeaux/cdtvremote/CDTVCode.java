@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 public enum CDTVCode {
+    NOOP(0x000),
     MOUSE_A(0x080),
     MOUSE_B(0x040),
     MOUSE_UP(0x020),

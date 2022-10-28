@@ -5,86 +5,133 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.hardware.ConsumerIrManager;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "irstuff";
 
-    private class ButtonsClickListener implements View.OnClickListener {
+    private ButtonsClickListener clickListener;
+
+    private class ButtonsClickListener implements View.OnTouchListener, Runnable {
         private final ConsumerIrManager consumerIrManager;
+        private final AtomicReference<CDTVCode> currentlyPressed = new AtomicReference<>(CDTVCode.NOOP);
+        private final AtomicBoolean running = new AtomicBoolean(false);
+        private final AtomicBoolean firstTimePressed = new AtomicBoolean(false);
 
         private ButtonsClickListener(ConsumerIrManager consumerIrManager) {
             this.consumerIrManager = consumerIrManager;
         }
 
+        private void start() {
+            this.running.set(true);
+            new Thread(this).start();
+        }
+
+        private void stop() {
+            this.running.set(false);
+        }
+
         @Override
-        public void onClick(View v) {
+        public boolean onTouch(View v, MotionEvent event) {
             Switch mouseJoystick = findViewById(R.id.switch_mouse_joystick);
             boolean isJoystick = mouseJoystick.isChecked();
-            CDTVCode code = null;
+            int action = event.getAction() & MotionEvent.ACTION_MASK;
+
+            if (action == MotionEvent.ACTION_UP) {
+                currentlyPressed.set(CDTVCode.NOOP);
+                return true;
+            } else if (action != MotionEvent.ACTION_DOWN) {
+                return false;
+            }
+
             switch (v.getId()) {
                 case R.id.button_mouse_up:
-                    code = isJoystick ? CDTVCode.JOYSTICK_UP : CDTVCode.MOUSE_UP;
+                    this.currentlyPressed.set(isJoystick ? CDTVCode.JOYSTICK_UP : CDTVCode.MOUSE_UP);
                     break;
                 case R.id.button_mouse_down:
-                    code = isJoystick ? CDTVCode.JOYSTICK_DOWN : CDTVCode.MOUSE_DOWN;
+                    this.currentlyPressed.set(isJoystick ? CDTVCode.JOYSTICK_DOWN : CDTVCode.MOUSE_DOWN);
                     break;
                 case R.id.button_mouse_left:
-                    code = isJoystick ? CDTVCode.JOYSTICK_LEFT : CDTVCode.MOUSE_LEFT;
+                    this.currentlyPressed.set(isJoystick ? CDTVCode.JOYSTICK_LEFT : CDTVCode.MOUSE_LEFT);
                     break;
                 case R.id.button_mouse_right:
-                    code = isJoystick ? CDTVCode.JOYSTICK_RIGHT : CDTVCode.MOUSE_RIGHT;
+                    this.currentlyPressed.set(isJoystick ? CDTVCode.JOYSTICK_RIGHT : CDTVCode.MOUSE_RIGHT);
                     break;
                 case R.id.button_mouse_a:
-                    code = isJoystick ? CDTVCode.JOYSTICK_A : CDTVCode.MOUSE_A;
+                    this.currentlyPressed.set(isJoystick ? CDTVCode.JOYSTICK_A : CDTVCode.MOUSE_A);
                     break;
                 case R.id.button_mouse_b:
-                    code = isJoystick ? CDTVCode.JOYSTICK_B : CDTVCode.MOUSE_B;
+                    this.currentlyPressed.set(isJoystick ? CDTVCode.JOYSTICK_B : CDTVCode.MOUSE_B);
                     break;
                 case R.id.button_key_1:
-                    code = CDTVCode.BUTTON_1;
+                    this.currentlyPressed.set(CDTVCode.BUTTON_1);
                     break;
                 case R.id.button_key_2:
-                    code = CDTVCode.BUTTON_2;
+                    this.currentlyPressed.set(CDTVCode.BUTTON_2);
                     break;
                 case R.id.button_key_3:
-                    code = CDTVCode.BUTTON_3;
+                    this.currentlyPressed.set(CDTVCode.BUTTON_3);
                     break;
                 case R.id.button_key_4:
-                    code = CDTVCode.BUTTON_4;
+                    this.currentlyPressed.set(CDTVCode.BUTTON_4);
                     break;
                 case R.id.button_key_5:
-                    code = CDTVCode.BUTTON_5;
+                    this.currentlyPressed.set(CDTVCode.BUTTON_5);
                     break;
                 case R.id.button_key_6:
-                    code = CDTVCode.BUTTON_6;
+                    this.currentlyPressed.set(CDTVCode.BUTTON_6);
                     break;
                 case R.id.button_key_7:
-                    code = CDTVCode.BUTTON_7;
+                    this.currentlyPressed.set(CDTVCode.BUTTON_7);
                     break;
                 case R.id.button_key_8:
-                    code = CDTVCode.BUTTON_8;
+                    this.currentlyPressed.set(CDTVCode.BUTTON_8);
                     break;
                 case R.id.button_key_9:
-                    code = CDTVCode.BUTTON_9;
+                    this.currentlyPressed.set(CDTVCode.BUTTON_9);
                     break;
                 case R.id.button_key_0:
-                    code = CDTVCode.BUTTON_0;
+                    this.currentlyPressed.set(CDTVCode.BUTTON_0);
                     break;
                 case R.id.button_key_escape:
-                    code = CDTVCode.BUTTON_ESCAPE;
+                    this.currentlyPressed.set(CDTVCode.BUTTON_ESCAPE);
                     break;
                 case R.id.button_key_enter:
-                    code = CDTVCode.BUTTON_ENTER;
+                    this.currentlyPressed.set(CDTVCode.BUTTON_ENTER);
                     break;
             }
-            if (code != null) {
-                consumerIrManager.transmit(40000, code.pattern());
-                Toast.makeText(MainActivity.this, "Sent code " + code.name(), Toast.LENGTH_SHORT).show();
+            this.firstTimePressed.set(true);
+            return true;
+        }
+
+        @Override
+        public void run() {
+            while(this.running.get()) {
+                try {
+                    if (currentlyPressed.get() == CDTVCode.NOOP) {
+                        Thread.sleep(20);
+                        continue;
+                    }
+                    if (firstTimePressed.get()) {
+                        consumerIrManager.transmit(40000, this.currentlyPressed.get().pattern());
+                        firstTimePressed.set(false);
+                        Thread.sleep(48); //Repeat every 60ms, but signal itself lasts for 11.5ms - 60-11.5 ~= 48
+                        continue;
+                    }
+                    consumerIrManager.transmit(40000, CDTVCode.repeatPattern());
+                    Thread.sleep(48); //Repeat every 60ms, but signal itself lasts for 11.5ms - 60-11.5 ~= 48
+                } catch (InterruptedException e) {
+                    //Shouldn't happen
+                }
             }
         }
     }
@@ -94,28 +141,35 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ButtonsClickListener listener = new ButtonsClickListener(
+        this.clickListener = new ButtonsClickListener(
                 (ConsumerIrManager) getApplicationContext().getSystemService(Context.CONSUMER_IR_SERVICE));
 
+        this.clickListener.start();
 
-        findViewById(R.id.button_mouse_up).setOnClickListener(listener);
-        findViewById(R.id.button_mouse_down).setOnClickListener(listener);
-        findViewById(R.id.button_mouse_left).setOnClickListener(listener);
-        findViewById(R.id.button_mouse_right).setOnClickListener(listener);
-        findViewById(R.id.button_mouse_a).setOnClickListener(listener);
-        findViewById(R.id.button_mouse_b).setOnClickListener(listener);
-        findViewById(R.id.button_key_1).setOnClickListener(listener);
-        findViewById(R.id.button_key_2).setOnClickListener(listener);
-        findViewById(R.id.button_key_3).setOnClickListener(listener);
-        findViewById(R.id.button_key_4).setOnClickListener(listener);
-        findViewById(R.id.button_key_5).setOnClickListener(listener);
-        findViewById(R.id.button_key_6).setOnClickListener(listener);
-        findViewById(R.id.button_key_7).setOnClickListener(listener);
-        findViewById(R.id.button_key_8).setOnClickListener(listener);
-        findViewById(R.id.button_key_9).setOnClickListener(listener);
-        findViewById(R.id.button_key_0).setOnClickListener(listener);
-        findViewById(R.id.button_key_escape).setOnClickListener(listener);
-        findViewById(R.id.button_key_enter).setOnClickListener(listener);
+        findViewById(R.id.button_mouse_up).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_mouse_down).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_mouse_left).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_mouse_right).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_mouse_a).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_mouse_b).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_key_1).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_key_2).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_key_3).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_key_4).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_key_5).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_key_6).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_key_7).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_key_8).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_key_9).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_key_0).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_key_escape).setOnTouchListener(this.clickListener);
+        findViewById(R.id.button_key_enter).setOnTouchListener(this.clickListener);
 
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        this.clickListener.stop();
     }
 }
